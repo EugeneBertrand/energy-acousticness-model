@@ -3,8 +3,6 @@ layout: home
 title: The Energy-Popularity Connection in Spotify Music
 ---
 
-# The Energy-Popularity Connection in Spotify Music
-
 **Name:** Eugene Bertrand
 
 ## Introduction
