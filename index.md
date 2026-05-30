@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: default
 title: The Energy-Popularity Connection in Spotify Music
 ---
 
