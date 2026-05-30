@@ -1,6 +1,6 @@
 # The Energy-Popularity Connection in Spotify Music
 
-**Name:** Your Name Here
+**Name:** Eugene Bertrand
 
 ## Introduction
 
