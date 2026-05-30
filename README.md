@@ -1,9 +1,9 @@
 ---
 layout: default
-title: The Energy-Popularity Connection in Spotify Music
+title: The Energy-Acousticness Connection in Spotify Music
 ---
 
-# The Energy-Popularity Connection in Spotify Music
+# The Energy-Acousticness Connection in Spotify Music
 
 **Name:** Eugene Bertrand
 
