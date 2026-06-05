@@ -1,31 +1,47 @@
 ---
 layout: default
-title: The Energy-Acousticness Connection in Spotify Music
+title: The Energy-Popularity Connection in Spotify Music
 ---
 
-# The Energy-Acousticness Connection in Spotify Music
+# The Energy-Popularity Connection in Spotify Music
 
 **Name:** Eugene Bertrand
 
 ## Introduction
 
-I chose this dataset because music is something involved in my everyday life, and I was interested in seeing whether the qualities of songs I notice as a listener are connected to popularity. This project uses a Spotify music dataset containing **114,000 songs**, where each row represents one track.
+Music listeners often describe songs as calm, intense, danceable, emotional, or energetic. I wanted to see whether one of those qualities, **energy**, is connected to how popular a song is on Spotify. This matters because popularity is often treated like a measure of listener preference, but it may also reflect measurable audio features, genre conventions, and platform behavior.
 
-The main question I explored is: **Do songs with higher energy levels tend to be more popular on Spotify?**
+This project uses a Spotify tracks dataset with **114,000 rows**, where each row represents one song. The central question is:
 
-The most relevant columns are `popularity`, which measures how popular a song is on Spotify, and `energy`, which measures how intense and active a song feels. I also used columns such as `track_genre`, `track_name`, `artists`, `duration_ms`, `release_date`, and `explicit` to clean and explore the dataset.
+**Do songs with higher energy levels tend to be more popular on Spotify?**
+
+The most relevant columns are:
+
+| Column | Description |
+| --- | --- |
+| `popularity` | A Spotify popularity score from 0 to 100. This is the main outcome for the EDA and hypothesis test. |
+| `energy` | A numerical audio feature from 0 to 1 describing how intense and active a track sounds. |
+| `acousticness` | A numerical audio feature from 0 to 1 describing whether a track sounds acoustic. |
+| `danceability` | A numerical audio feature from 0 to 1 describing how suitable a track is for dancing. |
+| `tempo` | The estimated speed of the song in beats per minute. This column has non-trivial missingness. |
+| `track_genre` | The genre label for each track. I use this as the response variable in the prediction task. |
+| `duration_ms` and `release_date` | Track metadata used to create `duration_min` and `release_year`. |
 
 ## Data Cleaning and Exploratory Data Analysis
 
-To clean the data, I removed the unnecessary index column, kept the columns relevant to my question, replaced missing values consistently, removed rows missing important values, converted `release_date` into a datetime column, created a `release_year` column, and converted song duration from milliseconds to minutes.
+I cleaned the data by removing the unnecessary `Unnamed: 0` index column, converting `duration_ms` into `duration_min`, extracting the first four digits of `release_date` into `release_year`, and creating an `energy_level` column that groups tracks into low, medium, and high energy. Since the dataset appears to be generated from Spotify track metadata and audio analysis outputs, these cleaning steps keep the original track-level unit of observation while making the variables easier to interpret. I also removed the one row that was missing identifying track information, leaving **113,999 cleaned rows**.
 
-I also created an `energy_level` column that groups songs into low, medium, and high energy categories.
+Here is the head of the cleaned DataFrame:
 
-**Head of Cleaned DataFrame:**
+| track_name | artists | track_genre | popularity | energy | acousticness | duration_min | release_year | energy_level |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Comedy | Gen Hoshino | acoustic | 73 | 0.461 | 0.032 | 3.84 | 1974 | medium |
+| Ghost - Acoustic | Ben Woodward | acoustic | 55 | 0.166 | 0.924 | 2.49 | 1995 | low |
+| To Begin Again | Ingrid Michaelson;ZAYN | acoustic | 57 | 0.359 | 0.210 | 3.51 | 1973 | medium |
+| Can't Help Falling In Love | Kina Grannis | acoustic | 71 | 0.060 | 0.905 | 3.37 | 2018 | low |
+| Hold On | Chord Overstreet | acoustic | 82 | 0.443 | 0.469 | 3.31 | 2017 | medium |
 
-| track_id | artists | track_name | popularity | duration_ms | release_date | explicit | danceability | energy | key | loudness | mode | speechiness | acousticness | instrumentalness | liveness | valence | tempo | track_genre | energy_level |
-|----------|---------|------------|------------|-------------|--------------|----------|--------------|--------|-----|----------|------|-------------|--------------|------------------|----------|---------|-------|-------------|--------------|
-| ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+### Univariate Analysis
 
 <iframe
   src="assets/energy-distribution.html"
@@ -34,7 +50,7 @@ I also created an `energy_level` column that groups songs into low, medium, and 
   frameborder="0"
 ></iframe>
 
-The energy distribution shows that most songs have moderate to high energy levels, with a peak around 0.7-0.8. This suggests that popular Spotify tracks tend to be more energetic, which aligns with the platform's focus on upbeat, engaging music.
+The energy distribution is concentrated more heavily in the medium-to-high range than the very low range. This suggests that many songs in the dataset are fairly active or intense, which makes energy a useful feature to compare against popularity.
 
 <iframe
   src="assets/popularity-distribution.html"
@@ -43,19 +59,9 @@ The energy distribution shows that most songs have moderate to high energy level
   frameborder="0"
 ></iframe>
 
-The popularity distribution is skewed right, with most songs having lower popularity scores and a long tail of highly popular tracks. This indicates that only a small fraction of songs achieve mainstream success on the platform.
+Popularity is spread across the 0 to 100 scale, but many songs have low or moderate popularity rather than extremely high popularity. This makes sense for a large catalog-style dataset, since only a small share of songs become very popular.
 
-I then examined the relationship between energy and popularity using scatter plots, box plots, groupby summaries, and pivot tables.
-
-**Grouped Table: Mean Popularity by Energy Level**
-
-| Energy Level | Mean Popularity | Count |
-|--------------|-----------------|-------|
-| Low | 32.5 | 38,000 |
-| Medium | 38.2 | 38,000 |
-| High | 42.1 | 38,000 |
-
-This grouped table shows a clear trend: as energy level increases, mean popularity also increases. High-energy songs have approximately 30% higher mean popularity compared to low-energy songs, providing strong evidence for the relationship between energy and popularity.
+### Bivariate Analysis
 
 <iframe
   src="assets/energy-vs-popularity.html"
@@ -64,7 +70,7 @@ This grouped table shows a clear trend: as energy level increases, mean populari
   frameborder="0"
 ></iframe>
 
-The scatter plot shows a weak positive correlation between energy and popularity, with higher energy songs tending to have slightly higher popularity scores on average. However, there is considerable variation, suggesting that energy alone is not a strong predictor of popularity.
+The scatter plot does not show a strong linear relationship between energy and popularity, but it does show that popular songs can appear across a wide range of energy values. This suggests that energy alone cannot explain popularity, even if there may be some group-level differences.
 
 <iframe
   src="assets/popularity-by-energy-level.html"
@@ -73,97 +79,136 @@ The scatter plot shows a weak positive correlation between energy and popularity
   frameborder="0"
 ></iframe>
 
-The box plot reveals that high-energy songs have a higher median popularity compared to low-energy songs, though the difference is not dramatic. This provides preliminary evidence supporting the hypothesis that energy may influence popularity.
+The box plot compares popularity across low, medium, and high energy songs. Medium-energy songs have the highest mean popularity in the cleaned data, while high-energy songs are more popular on average than low-energy songs.
+
+### Interesting Aggregates
+
+| energy_level | song_count | mean_popularity | median_popularity | mean_energy |
+| --- | --- | --- | --- | --- |
+| low | 15,836 | 30.07 | 28.00 | 0.19 |
+| medium | 37,278 | 35.29 | 38.00 | 0.51 |
+| high | 60,885 | 32.80 | 33.00 | 0.84 |
+
+This grouped table shows that popularity is not simply increasing with energy. Medium-energy songs have the highest mean and median popularity, while high-energy songs still have a higher mean popularity than low-energy songs.
+
+| track_genre | low | medium | high |
+| --- | --- | --- | --- |
+| anime | 49.59 | 46.69 | 49.26 |
+| chill | 54.03 | 54.09 | 50.47 |
+| emo | 58.94 | 50.65 | 44.84 |
+| grunge | 57.60 | 49.66 | 49.48 |
+| indian | 48.34 | 50.10 | 49.33 |
+| k-pop | 52.91 | 51.21 | 61.10 |
+| pop-film | 53.96 | 60.82 | 58.26 |
+| sad | 52.74 | 52.21 | 52.45 |
+
+This pivot table shows that the energy-popularity relationship differs by genre. For example, high-energy K-pop songs are much more popular on average than low-energy K-pop songs, while the opposite pattern appears for emo.
 
 ## Assessment of Missingness
 
-**NMAR Analysis:**
+The `tempo` column has non-trivial missingness: **19.4%** of its values are missing. I believe `tempo` could be **NMAR** if the missingness happens because Spotify's audio-analysis system has difficulty estimating tempo for songs with unclear beats, unusual rhythms, or noisy recordings. In that case, the missingness would depend on an unobserved property of the tempo value or rhythm itself. Additional data about beat-confidence scores, audio-analysis failures, or whether a song has a steady beat would help explain the missingness and could make it MAR.
 
-I believe there is no column in this dataset that is NMAR (Not Missing At Random). The missingness in the tempo column appears to be related to other observable audio features (energy, danceability, valence, acousticness), making it MAR (Missing At Random). If tempo were NMAR, it would mean the missingness depends on the tempo values themselves in a way not captured by other columns. To determine if tempo is truly NMAR, I would need additional data such as the original audio files or metadata from the recording process to see if certain types of songs systematically lack tempo information.
+To test missingness dependency, I created a boolean column indicating whether `tempo` is missing and ran permutation tests comparing the difference in means between songs with missing and non-missing tempo.
 
-**Missingness Dependency:**
+<iframe
+  src="assets/tempo-missingness-energy.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
 
-I chose `tempo` as the column with non-trivial missingness because about 19.4% of its values are missing.
+For `energy`, songs with missing tempo had mean energy **0.513**, while songs with non-missing tempo had mean energy **0.672**. The observed absolute difference was **0.159**, and the permutation test produced **p = 0.001**, so tempo missingness appears to depend on energy.
 
-I tested whether tempo missingness depends on `energy`, `popularity`, `danceability`, `valence`, and `acousticness`. The results showed that tempo missingness depends on energy, danceability, valence, and acousticness, but does not appear to depend on popularity.
-
-This suggests that tempo is not missing completely at random. Instead, its missingness may be related to other audio features of the song.
-
-**Missingness Visualization:**
-
-The permutation tests revealed that songs with missing tempo values tend to have higher energy and danceability scores compared to songs with observed tempo values. This pattern suggests that certain types of high-energy or dance-oriented tracks may have incomplete metadata in the dataset.
+For `popularity`, songs with missing tempo had mean popularity **33.29**, while songs with non-missing tempo had mean popularity **33.23**. The observed absolute difference was only **0.059**, and the permutation test produced **p = 0.731**, so I do not have evidence that tempo missingness depends on popularity.
 
 ## Hypothesis Testing
 
 I tested whether high-energy songs tend to be more popular than low-energy songs.
 
-**Null Hypothesis:** High-energy songs and low-energy songs have the same mean popularity.
+**Null Hypothesis:** High-energy songs and low-energy songs have the same mean popularity, and any observed difference is due to random chance.
 
 **Alternative Hypothesis:** High-energy songs have higher mean popularity than low-energy songs.
 
 **Test Statistic:** Mean popularity of high-energy songs minus mean popularity of low-energy songs.
 
-**Significance Level:** 0.05
+I used a significance level of **0.05**. This test statistic is appropriate because my question compares average popularity between two energy-based groups, and a permutation test is appropriate because it simulates the null hypothesis by shuffling energy-group labels.
 
-**Result:** The observed difference in mean popularity was 9.6. After performing 10,000 permutations, the p-value was 0.001, which is well below the significance level of 0.05.
+<iframe
+  src="assets/energy-hypothesis-permutation.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
 
-**Conclusion:** I reject the null hypothesis. There is strong statistical evidence that high-energy songs have higher mean popularity than low-energy songs. This conclusion is justified because the permutation test accounts for the natural variability in the data, and the very low p-value indicates that the observed difference is unlikely to occur by chance alone.
+The observed mean popularity for high-energy songs was **32.80**, while the observed mean popularity for low-energy songs was **30.07**. The observed difference was **2.73 popularity points**, and the permutation test gave **p = 0.001**. Since this p-value is below 0.05, I reject the null hypothesis. This provides evidence that high-energy songs are more popular on average than low-energy songs in this dataset, though this does not prove that energy causes popularity.
 
 ## Framing a Prediction Problem
 
-For my prediction problem, I predicted a song's `track_genre` using `acousticness` and `energy`.
+For the prediction task, I predicted a song's `track_genre` using audio features and track metadata. This is a **multiclass classification** problem because `track_genre` has many possible genre labels.
 
-This is a multiclass classification problem because `track_genre` is categorical with multiple genres. The goal is to predict which genre a song belongs to based on its audio features.
+The response variable is `track_genre`. I chose it because genre is closely connected to audio characteristics, so features like energy, acousticness, danceability, loudness, and duration should contain useful information about it. I used **accuracy** and **balanced accuracy** as evaluation metrics. Accuracy is easy to interpret as the proportion of correctly classified songs, while balanced accuracy is especially useful because the task has many genre classes and I want each genre to matter equally.
 
-**Response Variable:** I chose `track_genre` as the response variable because genre classification is a fundamental task in music information retrieval and has practical applications in music recommendation systems and playlist organization. Understanding which audio features predict genre can also provide insights into the musical characteristics that define different genres.
+The time of prediction is after a track already exists in the Spotify-style catalog and its audio features and popularity score have been measured. At that point, the model can use audio-analysis features such as `energy`, `acousticness`, `danceability`, `valence`, and `loudness`, along with metadata such as `duration_min` and `popularity`.
 
-**Evaluation Metric:** I chose accuracy as the evaluation metric because it provides a straightforward measure of how often the model correctly predicts the genre. While other metrics like F1-score could be useful for imbalanced classes, accuracy is appropriate here because the dataset has a relatively balanced distribution across genres, making it a reliable measure of overall model performance.
-
-**Information at Time of Prediction:** At the time of prediction, I would have access to the audio features (acousticness, energy, danceability, valence, etc.) that are extracted from the audio file itself. These features can be computed automatically from any song's audio signal, making them available for prediction even for new, unseen songs. I would not have access to popularity metrics or user engagement data, as these would only be available after the song has been released.
+For modeling, I used a stratified sample of up to 500 songs per genre, for **57,000 songs** total. This kept the 114-class task computationally manageable while making the genre classes more balanced for comparison.
 
 ## Baseline Model
 
-My baseline model used two features from the original dataset: `acousticness` and `energy`.
+My baseline model used two original quantitative features: `energy` and `acousticness`. It used **0 ordinal features** and **0 nominal features**, so no categorical encoding was needed. I built the model as a single sklearn `Pipeline` that imputes missing numerical values with the median, standardizes the two features, and fits a logistic regression classifier.
 
-**Feature Types:** Both `acousticness` and `energy` are quantitative (continuous) features ranging from 0 to 1. No ordinal or nominal features were used in the baseline model.
+The baseline model was evaluated on an unseen test set using the same train-test split later used for the final model. It achieved:
 
-**Encodings:** Since both features are quantitative, no categorical encoding was necessary. I used a SimpleImputer to handle any missing values (replacing them with the mean) and a StandardScaler to standardize the features to have zero mean and unit variance.
+| Model | Accuracy | Balanced Accuracy |
+| --- | --- | --- |
+| Baseline logistic regression | 0.0416 | 0.0416 |
 
-**Model:** I used a logistic regression classifier inside a sklearn pipeline. The pipeline imputes missing values, standardizes the numerical features, and then trains the model. I evaluated the model on unseen test data using accuracy and balanced accuracy.
-
-**Performance:** The baseline model achieved an accuracy of 0.28 on the test set. Given that there are multiple genres in the dataset, random guessing would achieve approximately 1/n accuracy (where n is the number of genres). The model's performance is modestly better than random chance but not substantially so, indicating that acousticness and energy alone are not sufficient for accurate genre classification. I believe this model is not "good" in the sense that it doesn't achieve high accuracy, but it provides a reasonable baseline for comparison with more sophisticated models.
+I do not believe this baseline model is very strong. Since it predicts among **114 genres**, two numerical audio features are not enough to distinguish many genres that can share similar energy and acousticness levels.
 
 ## Final Model
 
-My final model improved on the baseline model by adding two engineered features:
+My final model used a decision tree classifier. I added the original quantitative features `danceability`, `valence`, `loudness`, `duration_min`, and `popularity`, plus three engineered quantitative features:
 
-- `energy_acousticness_interaction`: The product of energy and acousticness
-- `energy_minus_acousticness`: The difference between energy and acousticness
+- `energy_acousticness_interaction`, which captures songs that are both energetic and acoustic or non-acoustic.
+- `energy_minus_acousticness`, which captures the contrast between intensity and acoustic sound.
+- `energy_danceability_interaction`, which captures songs that are both energetic and danceable.
 
-**Feature Justification:** From the perspective of the data generating process, these features are meaningful because different genres have characteristic relationships between energy and acousticness. For example, acoustic genres like classical music tend to have high acousticness but low energy, while electronic genres often have high energy but low acousticness. The interaction term captures how these two features work together, while the difference term captures the balance between them. These engineered features allow the model to learn genre-specific patterns that aren't captured by either feature alone.
+These features make sense for genre prediction because genres are often defined by combinations of sound qualities rather than by one audio feature alone. For example, energetic acoustic tracks and energetic electronic tracks can have similar energy values but very different genre labels.
 
-**Modeling Algorithm:** I chose a decision tree classifier because decision trees can capture non-linear relationships and interactions between features without requiring explicit feature engineering. They are also interpretable, allowing us to understand which features are most important for genre classification.
+I selected hyperparameters using `GridSearchCV` with 3-fold cross-validation on the training data. I tuned `max_depth` because deeper trees can learn more complex genre boundaries, and `min_samples_leaf` because larger leaf sizes reduce overfitting. The best hyperparameters were:
 
-**Hyperparameter Tuning:** I tuned `max_depth` (values: 3, 5, 7, 10, 15) and `min_samples_leaf` (values: 1, 5, 10, 20) using GridSearchCV with 5-fold cross-validation. The best performing hyperparameters were `max_depth=10` and `min_samples_leaf=5`. These values were chosen because they provided the best balance between model complexity and generalization performance, avoiding overfitting while still capturing important patterns in the data.
+| Hyperparameter | Best Value |
+| --- | --- |
+| `max_depth` | 18 |
+| `min_samples_leaf` | 30 |
 
-**Performance Improvement:** The final model achieved an accuracy of 0.42 on the same test set, compared to the baseline model's accuracy of 0.28. This represents a 50% improvement in accuracy. The improvement demonstrates that the engineered features successfully capture additional information about genre that was not present in the original features alone. The decision tree's ability to model non-linear relationships, combined with the informative engineered features, resulted in significantly better genre classification performance.
+<iframe
+  src="assets/model-performance.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+| Model | Accuracy | Balanced Accuracy |
+| --- | --- | --- |
+| Baseline logistic regression | 0.0416 | 0.0416 |
+| Final decision tree | 0.2057 | 0.2057 |
+
+The final model improves substantially over the baseline model, increasing balanced accuracy from **0.0416** to **0.2057** on the unseen test set. The model is still far from perfect because genre prediction across 114 classes is difficult, but it performs much better than the two-feature baseline.
 
 ## Fairness Analysis
 
-For fairness analysis, I tested whether the final model is less accurate for high-energy songs than low-energy songs.
+For the fairness analysis, I asked whether the final model performs worse for high-energy songs than for low-or-medium-energy songs.
 
-**Group Definitions:** I defined Group X as high-energy songs (energy > 0.66) and Group Y as low-energy songs (energy < 0.33). These groups were chosen because energy is a fundamental musical characteristic that might influence how well the model performs, and examining fairness across energy levels is relevant to ensuring the model works well for different types of music.
+**Group X:** High-energy songs, where `energy > 0.66`.
 
-**Evaluation Metric:** I chose accuracy as the evaluation metric because it measures the overall correctness of the model's predictions across both groups. This is appropriate for assessing whether the model performs consistently well regardless of energy level.
+**Group Y:** Low-or-medium-energy songs, where `energy <= 0.66`.
 
-**Null Hypothesis:** The model has about the same accuracy for high-energy and low-energy songs.
+**Evaluation Metric:** Accuracy.
 
-**Alternative Hypothesis:** The model has lower accuracy for high-energy songs.
+**Null Hypothesis:** The model is fair. Its accuracy for high-energy songs and low-or-medium-energy songs is roughly the same, and any observed difference is due to random chance.
 
-**Test Statistic:** Difference in accuracy between high-energy and low-energy songs (accuracy for high-energy minus accuracy for low-energy).
+**Alternative Hypothesis:** The model is less accurate for high-energy songs than for low-or-medium-energy songs.
 
-**Significance Level:** 0.05
+**Test Statistic:** Accuracy for low-or-medium-energy songs minus accuracy for high-energy songs.
 
-**Result:** The observed difference in accuracy was -0.03 (high-energy songs had 3% lower accuracy). After performing 10,000 permutations, the p-value was 0.12.
-
-**Conclusion:** I fail to reject the null hypothesis. There is not sufficient evidence to conclude that the model performs worse for high-energy songs compared to low-energy songs. The small observed difference in accuracy could reasonably occur by chance. This suggests that the model is relatively fair across energy levels, though continued monitoring of model performance across different song characteristics is recommended.
+On the test set, the final model had accuracy **0.1992** for high-energy songs and **0.2130** for low-or-medium-energy songs. The observed test statistic was **0.0138**, and the permutation test gave **p = 0.026**. At the 0.05 significance level, I reject the null hypothesis. This provides evidence that the model performs slightly worse for high-energy songs, although the size of the accuracy gap is fairly small.
