@@ -3,6 +3,10 @@
 
 @import "{{ site.theme }}";
 
+#header {
+  display: none;
+}
+
 iframe {
   max-width: 100%;
 }
